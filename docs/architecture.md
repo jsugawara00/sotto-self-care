@@ -1,117 +1,12 @@
-# アーキテクチャ
+# アーキテクチャ（設計の詳細）
 
 「そっと。」は、**本人が主体的に行うセルフケア**（心のストレスチェックと体の健康管理）を主役に据え、
-総務・管理者の運用機能がそれを支える構成です。機微なデータほど厳重に扱う、というプライバシー優先の設計になっています。
+総務・管理者の運用機能がそれを支える構成です。機微なデータほど厳重に扱う、プライバシー優先の設計になっています。
 
-## 全体像
+全体像の図とロール×機能の対応は、**[README のアーキテクチャ図](../README.md#アーキテクチャ図)** を参照してください。
+本書はその補足として、**図の凡例**と、**セキュリティ・プライバシー設計の詳細**をまとめます。
 
-```mermaid
-flowchart TB
-  %% ===================== 利用者 =====================
-  subgraph Roles["利用者（4つのロール）"]
-    direction LR
-    member["担当者"]
-    hr["総務"]
-    admin["管理者"]
-    owner["全権"]
-  end
-
-  %% ===================== 画面 =====================
-  subgraph Client["画面（Next.js・ブラウザ）"]
-    direction TB
-    subgraph Core["★ 本人のセルフケア（アプリの主役）"]
-      direction LR
-      scSelf["セルフチェック<br/>チェック→縦断フィードバック→確認チャット"]
-      scMy["ストレスチェック取込<br/>過去の結果票を履歴に取り込む"]
-      scHealth["健康管理<br/>健診書類の読取り・再検査の報告"]
-    end
-    subgraph Support["支える機能（管理・運用・通知）"]
-      direction LR
-      scHr["総務業務<br/>再検査の承認・差し戻し"]
-      scAdmin["管理ダッシュボード<br/>実施率・再検査完了率"]
-      scReport["期間レポート<br/>CSV・印刷"]
-      scUsers["従業員・招待管理"]
-      scAnn["一括案内<br/>送信・確認応答"]
-    end
-  end
-
-  %% ===================== サーバー =====================
-  subgraph Server["サーバー（Next.js API・認証ゲート）"]
-    direction LR
-    apiGate["認証・招待ゲート"]
-    apiCheck["チェック・取込API"]
-    apiHealth["健康管理API"]
-    apiHr["総務API"]
-    apiAdmin["集計・レポートAPI"]
-    apiAnn["一括案内API"]
-  end
-
-  %% ===================== AI処理 =====================
-  subgraph Funcs["AI処理（Cloud Functions）"]
-    direction LR
-    fnFb["フィードバック・確認チャット生成"]
-    fnReply["チャットの返し＋安全判定"]
-    fnParse["書類読取り（onCall・非保存）"]
-  end
-
-  %% ===================== データ =====================
-  subgraph Data["データ（Firestore）"]
-    direction LR
-    dbGen["users（氏名・メール）<br/>invitations / orgSettings"]
-    dbCheck["🔒 checkins"]
-    dbAudit["auditLogs（証跡）"]
-    dbAnn["🔒 announcements"]
-    subgraph PII["健康管理（PII分離・直アクセス禁止・利用停止で全削除）"]
-      direction LR
-      dbLink["🔒 healthLinks<br/>uid→仮名ID（唯一の橋渡し）"]
-      dbRec["🔒 healthRecords<br/>氏名・メールを持たない"]
-      dbRcpt["🔒 receipts<br/>承認・差し戻しで即削除"]
-    end
-  end
-
-  %% ===================== 外部 =====================
-  subgraph Ext["外部サービス"]
-    direction LR
-    auth["Firebase Auth<br/>招待制Googleログイン"]
-    claude["Claude API"]
-  end
-
-  %% ---------- 主要な流れ（太線・層どうし） ----------
-  Roles ==>|ロールに応じて画面を出し分け| Client
-  Client ==>|IDトークン付きで呼び出し（ロール確認）| Server
-  Server ==>|読み書き（機微データはAPIのみ）| Data
-
-  %% ---------- 補助的な流れ（点線） ----------
-  Client -. ログイン .-> auth
-  Core -. 書類読取り（onCall・非保存） .-> Funcs
-  Data -. checkins書込でトリガー .-> Funcs
-  Funcs -. AIで生成→書き戻し .-> Data
-  Funcs -. 抽出・生成 .-> claude
-
-  %% ---------- 色（主役＝緑／機微＝赤＋🔒／AI・外部は淡色／他は白） ----------
-  classDef default fill:#ffffff,stroke:#9aa0a6,color:#202124;
-  classDef core fill:#d5efe3,stroke:#1f7a44,stroke-width:2px,color:#14532d;
-  classDef sensitive fill:#fdecea,stroke:#c0392b,color:#7b241c;
-  classDef ai fill:#f5f2fc,stroke:#8a7bbf,color:#4a3f7a;
-  classDef ext fill:#f2f6fb,stroke:#7fa3cc,color:#2c4a6b;
-  class scSelf,scMy,scHealth core;
-  class fnFb,fnReply,fnParse ai;
-  class dbCheck,dbLink,dbRec,dbRcpt,dbAnn sensitive;
-  class auth,claude ext;
-
-  %% ---------- 大枠は白背景（区別は枠線と中の箱で） ----------
-  style Roles fill:#ffffff,stroke:#cccccc
-  style Client fill:#ffffff,stroke:#cccccc
-  style Core fill:#ffffff,stroke:#1f7a44,stroke-width:2px
-  style Support fill:#ffffff,stroke:#dddddd
-  style Server fill:#ffffff,stroke:#cccccc
-  style Funcs fill:#ffffff,stroke:#cccccc
-  style Data fill:#ffffff,stroke:#cccccc
-  style PII fill:#ffffff,stroke:#c0392b,stroke-width:2px,stroke-dasharray:5 3
-  style Ext fill:#ffffff,stroke:#cccccc
-```
-
-## 凡例
+## 図の凡例
 
 | 見た目 | 意味 |
 |---|---|
@@ -159,18 +54,3 @@ IDトークンの検証とロール確認を行います。図の太い矢印が
 - 健診・ストレスチェック書類の読取りは `onCall` で行い、抽出結果を返すだけで**書類は保存しません**。
 - 縦断フィードバック・確認チャット・チャットの返しは、`checkins` への書き込みを
   **Firestore トリガー**で受けて生成し、結果を書き戻します。
-
-## ロール × 機能の対応
-
-| 機能 | 担当者 | 総務 | 管理者 | 全権 |
-|---|:--:|:--:|:--:|:--:|
-| セルフチェック・確認チャット | ● | ● | | |
-| ストレスチェック取込（マイページ） | ● | ● | | |
-| 健康管理（読取り・再検査の報告） | ● | ● | | |
-| 総務業務（再検査の承認・差し戻し） | | ● | | |
-| 管理ダッシュボード・期間レポート | | | ● | ● |
-| 従業員・招待管理（一覧・ロール付与） | | | ●（閲覧・一覧） | ●（ロール付与/剥奪） |
-| 一括案内 | 受信・確認応答 | 送信＋受信 | 送信＋受信 | 送信＋受信 |
-
-管理者・全権は実施状況や完了の有無といった**集計値のみ**を閲覧でき、個別の回答内容・診断数値・
-健診の中身・領収書は Security Rules レベルで見えません。
