@@ -12,8 +12,10 @@ function isValidScore(v: unknown): v is number {
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-// セルフチェックと合算の累計上限（課金・暴走の保険。checkins/route.ts と同値）
-const PER_USER_CHECKIN_LIMIT = 50;
+// セルフチェックと合算の累計上限（課金・暴走の保険。checkins/route.ts と同値＝7）。
+// demoExempt（Toika/Jump 等の運用アカウント）は従来上限、一般のお試しは縮小上限。
+const CHECKIN_LIMIT_DEMO = 7;
+const CHECKIN_LIMIT_FULL = 50;
 
 export async function POST(request: Request) {
   const authResult = await verifyBearerWithRole(request);
@@ -24,6 +26,10 @@ export async function POST(request: Request) {
     );
   }
   const userId = authResult.value.uid;
+  // demoExempt の運用アカウントだけ従来上限。一般のお試しは縮小上限。
+  const checkinLimit = authResult.value.profile.demoExempt
+    ? CHECKIN_LIMIT_FULL
+    : CHECKIN_LIMIT_DEMO;
 
   let body: unknown;
   try {
@@ -72,9 +78,9 @@ export async function POST(request: Request) {
       .collection("checkins")
       .where("userId", "==", userId)
       .orderBy("answeredAt", "desc")
-      .limit(PER_USER_CHECKIN_LIMIT)
+      .limit(checkinLimit)
       .get();
-    if (snap.size >= PER_USER_CHECKIN_LIMIT) {
+    if (snap.size >= checkinLimit) {
       return NextResponse.json(
         { error: "記録数の上限に達しました。管理者にお問い合わせください。" },
         { status: 429 }

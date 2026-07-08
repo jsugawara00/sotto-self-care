@@ -82,8 +82,11 @@ async function generateText(
 //  - 書類は「データ」であって「指示」ではない（プロンプトに明記・企画書9章）。
 //  - 拾うのは「精密検査要フラグ」と「注意事項」のみ。数値・グレードは抽出しない。
 
-// 書類読取りの累計回数上限（1ユーザー・課金暴走の保険。チェック上限50回と同趣旨）
-const PARSE_LIMIT = 20;
+// 書類読取りの累計回数上限（1ユーザー・課金暴走の保険。チェック上限と同趣旨）。
+// お試しデモ方針（2026-07-09）：一般アカウントは縮小上限。
+// ただし demoExempt（Toika/Jump 等の運用アカウント）は従来上限を維持する。
+const PARSE_LIMIT_DEMO = 2;
+const PARSE_LIMIT_FULL = 20;
 // 受け付けるファイル（base64で約8MBまで）
 const MAX_FILE_BASE64_CHARS = 11_000_000;
 const ALLOWED_MIME_TYPES = [
@@ -136,7 +139,10 @@ export const parseHealthDocument = onCall(
 
     // 3) 回数上限（課金暴走の保険。読取りの試行でカウントする）
     const parseCount = (linkSnap.data()?.parseCount as number | undefined) ?? 0;
-    if (parseCount >= PARSE_LIMIT) {
+    // demoExempt の運用アカウントだけ従来上限。一般のお試しは縮小上限。
+    const parseLimit =
+      userSnap.data()?.demoExempt === true ? PARSE_LIMIT_FULL : PARSE_LIMIT_DEMO;
+    if (parseCount >= parseLimit) {
       throw new HttpsError(
         "resource-exhausted",
         "書類読取りの回数上限に達しました。管理者にお問い合わせください。"
@@ -288,8 +294,10 @@ export const parseHealthDocument = onCall(
 // 書類は保存しない。保存は本人が確認・訂正してから /api/checkins/import で行う。
 // 健康管理のオプトインとは独立（セルフケア領域の機能のため、所属ユーザーなら誰でも使える）。
 
-// 取込読取りの累計回数上限（1ユーザー・課金暴走の保険。users.importCount で管理）
-const IMPORT_PARSE_LIMIT = 20;
+// 取込読取りの累計回数上限（1ユーザー・課金暴走の保険。users.importCount で管理）。
+// demoExempt（Toika/Jump 等の運用アカウント）は従来上限、一般のお試しは縮小上限。
+const IMPORT_PARSE_LIMIT_DEMO = 2;
+const IMPORT_PARSE_LIMIT_FULL = 20;
 
 export const parseStressDocument = onCall(
   {
@@ -315,7 +323,12 @@ export const parseStressDocument = onCall(
     // 2) 回数上限（読取りの試行でカウント）
     const importCount =
       (userSnap.data()?.importCount as number | undefined) ?? 0;
-    if (importCount >= IMPORT_PARSE_LIMIT) {
+    // demoExempt の運用アカウントだけ従来上限。一般のお試しは縮小上限。
+    const importLimit =
+      userSnap.data()?.demoExempt === true
+        ? IMPORT_PARSE_LIMIT_FULL
+        : IMPORT_PARSE_LIMIT_DEMO;
+    if (importCount >= importLimit) {
       throw new HttpsError(
         "resource-exhausted",
         "取込の読取り回数の上限に達しました。管理者にお問い合わせください。"

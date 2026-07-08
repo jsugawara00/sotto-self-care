@@ -11,8 +11,12 @@ function isValidScore(v: unknown): v is number {
   return typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 4;
 }
 
-// 1アカウント当たりのチェック回数の上限（暴走・課金対策のレート制限。試作から継承）
-const PER_USER_CHECKIN_LIMIT = 50;
+// 1アカウント当たりのチェック回数の上限（暴走・課金対策のレート制限。試作から継承）。
+// お試しデモ方針（2026-07-09）：一般アカウントは絞る。セルフチェックは
+// お試しで数回触れる想定＝実勢と同じ 7回 とする（読取り系は別途 2回）。
+// ただし demoExempt（Toika/Jump 等の運用アカウント）は従来の上限を維持する。
+const CHECKIN_LIMIT_DEMO = 7;
+const CHECKIN_LIMIT_FULL = 50;
 
 export async function POST(request: Request) {
   // 所属済みユーザーのみ（招待ゲートを通っていないアカウントは 403）
@@ -24,6 +28,10 @@ export async function POST(request: Request) {
     );
   }
   const userId = authResult.value.uid;
+  // demoExempt の運用アカウントだけ従来上限。一般のお試しは縮小上限。
+  const checkinLimit = authResult.value.profile.demoExempt
+    ? CHECKIN_LIMIT_FULL
+    : CHECKIN_LIMIT_DEMO;
 
   let body: unknown;
   try {
@@ -54,7 +62,7 @@ export async function POST(request: Request) {
       .where("userId", "==", userId)
       .count()
       .get();
-    if (countSnap.data().count >= PER_USER_CHECKIN_LIMIT) {
+    if (countSnap.data().count >= checkinLimit) {
       return NextResponse.json(
         { error: "チェック回数の上限に達しました。管理者にお問い合わせください。" },
         { status: 429 }

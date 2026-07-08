@@ -31,6 +31,7 @@ export type UserProfile = {
   role: Role;
   listed: boolean; // 従業員一覧に載せる／載せない
   onboarded: boolean; // 初回オンボーディング完了フラグ
+  demoExempt?: boolean; // 使用制限の免除フラグ（運用アカウント=Toika/Jump 等は従来上限を維持。一般のお試しは縮小上限）
   createdAt?: unknown; // Firestore Timestamp
   updatedAt?: unknown;
 };
