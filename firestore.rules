@@ -1,0 +1,111 @@
+rules_version = '2';
+
+// セキュリティ方針（企画書4章・9章／指示書STEP1-6）：
+// - role別の閲覧範囲をルールレベルで強制する（アプリ側ロジックだけに頼らない）。
+// - member：自分のデータのみ。admin：一覧・集計のみで、個別の回答内容(checkins)は読めない。
+// - users の新規作成は招待ゲートAPI（Admin SDK）のみ。クライアントからの作成は禁止。
+// - Claude APIキー・AI生成はサーバー側（Cloud Functions）のみ。
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 招待ゲートを通過して users/{uid} を持っているか（＝所属あり）
+    function hasProfile() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function myRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // 管理者相当（admin / owner）
+    function isAdminish() {
+      return hasProfile() && myRole() in ['admin', 'owner'];
+    }
+
+    // users：本人は自分を読める。admin/owner は従業員一覧のため全員読める。
+    // 作成・削除はサーバー（招待ゲートAPI・Admin SDK）のみ。
+    // 本人が更新できるのは表示名とオンボーディング完了フラグだけ
+    // （role / listed / email の自己変更はルールで禁止＝権限モデルの背骨）。
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdminish());
+      allow create, delete: if false;
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['displayName', 'onboarded', 'updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 50
+        && request.resource.data.onboarded is bool;
+    }
+
+    // invitations：発行・受諾はサーバーAPIのみ。admin/owner は状況確認のため閲覧可。
+    match /invitations/{invitationId} {
+      allow read: if isAdminish();
+      allow write: if false;
+    }
+
+    // auditLogs：書き込みはサーバーAPIのみ。admin/owner は閲覧可。
+    match /auditLogs/{logId} {
+      allow read: if isAdminish();
+      allow write: if false;
+    }
+
+    // checkins：読み取りは本人のみ。admin にも読ませない
+    // （指示書STEP1-4：個別の回答内容・診断数値は見えないようルールで制御。集計はAPI経由）。
+    // 書き込みはサーバー（API Route / Cloud Functions）のみ。
+    match /checkins/{checkinId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // orgSettings/default：所属ユーザーは読める（本人画面の周期表示に使用）。
+    // 周期の変更は admin/owner のみ（指示書STEP2-1）。
+    match /orgSettings/default {
+      allow read: if hasProfile();
+      allow create, update: if isAdminish()
+        && request.resource.data.checkCycle in ['daily', 'weekly', 'monthly', 'yearly']
+        && request.resource.data.keys().hasOnly(['checkCycle', 'updatedBy', 'updatedAt'])
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // orgSettings/healthFeature：健康管理機能の企業側スイッチ（二重オプトイン・企画書8-2）。
+    // 所属ユーザーは読める（本人画面で機能の表示判定に使用）。変更は admin/owner のみ。
+    match /orgSettings/healthFeature {
+      allow read: if hasProfile();
+      allow create, update: if isAdminish()
+        && request.resource.data.enabled is bool
+        && request.resource.data.keys().hasOnly(['enabled', 'updatedBy', 'updatedAt'])
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ===== STEP3：健康管理の機微データ（企画書9章 PII分離） =====
+    // healthLinks（uid→仮名IDのマッピング）・healthRecords（機微データ本体）・
+    // receipts（領収書・総務の承認まで一時保持）は、本人であっても
+    // クライアントから直接読み書きさせない。アクセスはすべてサーバーAPI経由
+    // （本人=API・総務=API・admin/ownerには一切見せない）。
+    match /healthLinks/{userId} {
+      allow read, write: if false;
+    }
+    match /healthRecords/{healthId} {
+      allow read, write: if false;
+    }
+    match /receipts/{healthId} {
+      allow read, write: if false;
+    }
+
+    // ===== STEP4：一括案内（企画書8-4） =====
+    // announcements もクライアント直アクセス禁止。読み書きはすべてサーバーAPI経由
+    // （宛先の絞り込み・確認応答の本人確認・完了有無の閲覧権限をAPIで一元管理する）。
+    match /announcements/{announcementId} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,58 @@
+# dependencies
+/node_modules
+/functions/node_modules
+/.pnp
+.pnp.js
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# local env files
+.env
+.env*.local
+.env.local
+
+# firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+*-service-account*.json
+serviceAccountKey.json
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# functions build output
+/functions/lib
+
+.vercel
+
+# 秘密の保険（.env*.local ではカバーされない）
+*.secret.local
+
+# 判断の物差し（AIナレッジ）：企画書5章の方針により最初から追跡対象外。
+# 試作でGitHub履歴から消せなかった反省を踏まえ、example のみ追跡する。
+/functions/knowledge/care-policy.md
+
+# 内部ドキュメント（公開しない＝Toika・戦略・詳細設計を含む／2レイヤー分離）
+/TODO.md
+/CLAUDE.md
+/企画書_そっとリメイク版.md
+
+# ローカルのツール・スキル類
+/.claude/
+/.agents/
+/skills-lock.json

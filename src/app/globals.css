@@ -1,0 +1,633 @@
+:root {
+  --bg: #f2f8f7;
+  --card: #ffffff;
+  --text: #1f2933;
+  --muted: #6b7280;
+  --primary: #3fa295;
+  --primary-hover: #2f867b;
+  --border: #d8e8e4;
+  --accent-bg: #e2f1ee;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 2px 10px rgba(20, 80, 72, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+    "Noto Sans JP", Meiryo, sans-serif;
+  line-height: 1.7;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  box-shadow: var(--shadow);
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 8px;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+button {
+  cursor: pointer;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+button.primary {
+  background: var(--primary);
+  color: #fff;
+  width: 100%;
+}
+
+button.primary:hover {
+  background: var(--primary-hover);
+}
+
+button.primary:disabled {
+  background: #a6d2cb;
+  cursor: not-allowed;
+}
+
+button.link {
+  background: none;
+  color: var(--primary);
+  padding: 4px;
+  text-decoration: underline;
+}
+
+/* リンク（aタグ）もテーマ色に統一（既定の紫を上書き） */
+a {
+  color: var(--primary);
+}
+
+a.link {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.question {
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.question:last-of-type {
+  border-bottom: none;
+}
+
+.domain-tag {
+  display: inline-block;
+  background: var(--accent-bg);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.option:hover {
+  border-color: var(--primary);
+}
+
+.option input {
+  margin: 0;
+}
+
+.option.selected {
+  border-color: var(--primary);
+  background: var(--accent-bg);
+}
+
+.error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.feedback-box {
+  background: var(--accent-bg);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.score-row:last-child {
+  border-bottom: none;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.brand-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+.role-tag {
+  background: var(--accent-bg);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  margin-left: 2px;
+}
+
+/* キーボード操作時のフォーカス表示（アクセシビリティ） */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.option:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.center {
+  text-align: center;
+  padding: 48px 0;
+}
+
+/* ログイン等・エントリー画面のブランドロゴ表示 */
+.app-header-center {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.brand-lg {
+  font-size: 1.05rem;
+}
+
+/* 管理テーブルの横スクロール（モバイル対応） */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 小画面での余白調整 */
+@media (max-width: 480px) {
+  main {
+    padding: 20px 14px 48px;
+  }
+  .card {
+    padding: 20px 18px;
+  }
+  h1 {
+    font-size: 1.25rem;
+  }
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.92rem;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--accent-bg);
+}
+
+.badge-ok {
+  display: inline-block;
+  background: #e7f6ec;
+  color: #1f7a44;
+  border: 1px solid #b7e3c6;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.badge-todo {
+  display: inline-block;
+  background: #fdf3e7;
+  color: #9a6212;
+  border: 1px solid #f0d8b3;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+/* ホーム上部のお知らせバナー（STEP4）。
+   状態から導出して表示するため、対応するアクションが済むと自動で消える。
+   注意を引きつつ警告に見えない、あたたかい配色（badge-todo と同系）。 */
+.notice-bar {
+  background: #fdf3e7;
+  border: 1px solid #f0d8b3;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  color: #7a5210;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* お知らせの本文ブロック（notice-bar と同じ配色のブロック版）。
+   ホームのバナー→遷移先の詳細、を同じ色でつなぎ、読み返さなくても目で見つけられるようにする */
+.notice-box {
+  background: #fdf3e7;
+  border: 1px solid #f0d8b3;
+  border-left: 4px solid #e3b264;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 8px 0 14px;
+  color: #7a5210;
+}
+
+.status-done {
+  background: var(--accent-bg);
+  border-left: 4px solid #1f7a44;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #1f7a44;
+  margin-bottom: 8px;
+}
+
+.status-todo {
+  background: #fdf3e7;
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+/* --- デモUI：連絡ダイアログ（モーダル） --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 40, 38, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--primary);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 460px;
+  padding: 22px 24px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 96px;
+  margin-bottom: 14px;
+}
+
+.demo-note {
+  background: #fff8e6;
+  border: 1px solid #f0e0b3;
+  color: #8a6d1f;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.record-note {
+  background: var(--accent-bg);
+  color: var(--primary);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  width: auto;
+}
+
+button.secondary {
+  background: var(--accent-bg);
+  color: var(--primary);
+}
+
+button.secondary:hover {
+  background: #d5eae5;
+}
+
+button.btn-sm {
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  background: var(--accent-bg);
+  color: var(--primary);
+}
+
+button.btn-sm:hover {
+  background: #d5eae5;
+}
+
+/* --- デモUI：管理者からのメッセージ枠（担当者画面） --- */
+.msg-frame {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 6px;
+  transition: opacity 0.2s ease;
+}
+
+.msg-frame.read {
+  opacity: 0.5;
+}
+
+.msg-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.notice-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e5484d;
+}
+
+/* --- リメイク版で追加 --- */
+
+/* ロール切替セレクト（従業員一覧） */
+select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+select:disabled {
+  background: var(--bg);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* Googleログインボタン */
+button.google {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+button.google:hover {
+  background: var(--accent-bg);
+}
+
+/* 実施状況の統計ボックス（管理者トップ）。ボックス数が3〜4個でも揃うよう可変列 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.stat-box {
+  background: var(--accent-bg);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.stat-box .stat-num {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.3;
+}
+
+.stat-box.warn {
+  background: #fdf3e7;
+}
+
+.stat-box.warn .stat-num {
+  color: #9a6212;
+}
+
+.stat-box .stat-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* 確認チャット（そっと問い返す）枠 */
+.gentle-ask {
+  background: #fbf7ef;
+  border: 1px solid #ecdfc3;
+  border-left: 4px solid #d8b566;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+
+.gentle-ask .ask-head {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #8a6d1f;
+  margin-bottom: 6px;
+}
+
+/* レポートの表（期間指定レポート・/admin/report） */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 0.92rem;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.report-table th {
+  background: var(--accent-bg);
+}
+
+/* 印刷（企画書8-5③）：操作UIを隠し、レポート本文だけを刷る */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .card {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+}
