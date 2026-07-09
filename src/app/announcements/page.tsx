@@ -177,6 +177,9 @@ export default function AnnouncementsPage() {
               style={{ width: "100%", marginTop: 4 }}
             />
           </label>
+          <p className="muted" style={{ fontSize: "0.82rem", margin: 0 }}>
+            💬 受け取る人が安心して読めるよう、優しい言葉を心がけましょう。
+          </p>
           <div>
             宛先：
             {(Object.keys(AUDIENCE_LABELS) as AnnouncementAudience[]).map((a) => (
