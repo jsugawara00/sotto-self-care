@@ -33,6 +33,9 @@ export default function LoginPage() {
         code !== "auth/popup-closed-by-user" &&
         code !== "auth/cancelled-popup-request"
       ) {
+        // 画面は汎用文言のまま。原因コード（auth/unauthorized-domain 等）は
+        // 切り分け用にコンソールへ残す。
+        console.error("Googleログインに失敗:", code, err);
         setLoginError("ログインに失敗しました。もう一度お試しください。");
       }
     } finally {
